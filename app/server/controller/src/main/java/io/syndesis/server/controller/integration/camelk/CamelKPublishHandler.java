@@ -60,6 +60,7 @@ import io.syndesis.server.controller.integration.camelk.crd.IntegrationSpec;
 import io.syndesis.server.controller.integration.camelk.crd.IntegrationTraitSpec;
 import io.syndesis.server.controller.integration.camelk.crd.ResourceSpec;
 import io.syndesis.server.controller.integration.camelk.crd.SourceSpec;
+import io.syndesis.server.controller.integration.camelk.customizer.CamelKIntegrationCustomizer;
 import io.syndesis.server.dao.IntegrationDao;
 import io.syndesis.server.dao.IntegrationDeploymentDao;
 import io.syndesis.server.endpoint.v1.VersionService;
@@ -76,6 +77,7 @@ public class CamelKPublishHandler extends BaseCamelKHandler implements StateChan
     private final IntegrationResourceManager resourceManager;
     private final IntegrationProjectGenerator projectGenerator;
     private final VersionService versionService;
+    private final List<CamelKIntegrationCustomizer> customizers;
 
     private boolean compress;
 
@@ -86,11 +88,13 @@ public class CamelKPublishHandler extends BaseCamelKHandler implements StateChan
             IntegrationProjectGenerator projectGenerator,
             IntegrationPublishValidator validator,
             IntegrationResourceManager resourceManager,
-            VersionService versionService) {
+            VersionService versionService,
+            List<CamelKIntegrationCustomizer> customizers) {
         super(openShiftService, iDao, idDao, validator);
         this.projectGenerator = projectGenerator;
         this.resourceManager = resourceManager;
         this.versionService = versionService;
+        this.customizers = customizers;
 
         // this should be taken from a configuration
         this.compress = false;
@@ -167,6 +171,12 @@ public class CamelKPublishHandler extends BaseCamelKHandler implements StateChan
         prepareDeployment(integrationDeployment);
 
         io.syndesis.server.controller.integration.camelk.crd.Integration camelkIntegration = createIntegrationCR(integrationDeployment);
+        if (this.customizers != null && !this.customizers.isEmpty()) {
+            for (CamelKIntegrationCustomizer customizer : this.customizers) {
+                camelkIntegration = customizer.customize(integrationDeployment, camelkIntegration);
+            }
+        }
+
         Secret camelkSecrets = createIntegrationSecret(integrationDeployment);
 
         getOpenShiftService().createOrReplaceSecret(camelkSecrets);
