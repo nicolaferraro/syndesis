@@ -1,5 +1,6 @@
 package io.syndesis.server.controller.integration.camelk.customizer;
 
+import io.fabric8.kubernetes.api.model.Secret;
 import io.syndesis.common.model.integration.IntegrationDeployment;
 import io.syndesis.common.model.integration.StepKind;
 import io.syndesis.common.model.integration.step.template.TemplateStepLanguage;
@@ -20,7 +21,7 @@ import static io.syndesis.common.util.Optionals.asStream;
 public class TemplatingCamelKIntegrationCustomizer implements CamelKIntegrationCustomizer {
 
     @Override
-    public Integration customize(IntegrationDeployment deployment, Integration integration) {
+    public Integration customize(IntegrationDeployment deployment, Integration integration, Secret secret) {
 
         Set<TemplateStepLanguage> languages = deployment.getSpec().getFlows().stream()
             .flatMap(f -> f.getSteps().stream())

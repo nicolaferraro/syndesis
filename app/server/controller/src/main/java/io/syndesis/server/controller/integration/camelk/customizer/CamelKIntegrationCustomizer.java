@@ -15,6 +15,7 @@
  */
 package io.syndesis.server.controller.integration.camelk.customizer;
 
+import io.fabric8.kubernetes.api.model.Secret;
 import io.syndesis.common.model.integration.IntegrationDeployment;
 import io.syndesis.server.controller.integration.camelk.crd.Integration;
 
@@ -24,6 +25,6 @@ import io.syndesis.server.controller.integration.camelk.crd.Integration;
 @FunctionalInterface
 public interface CamelKIntegrationCustomizer {
 
-    Integration customize(IntegrationDeployment deployment, Integration integration);
+    Integration customize(IntegrationDeployment deployment, Integration integration, Secret secret);
 
 }

@@ -171,15 +171,15 @@ public class CamelKPublishHandler extends BaseCamelKHandler implements StateChan
         prepareDeployment(integrationDeployment);
 
         io.syndesis.server.controller.integration.camelk.crd.Integration camelkIntegration = createIntegrationCR(integrationDeployment);
+        Secret camelkSecret = createIntegrationSecret(integrationDeployment);
+
         if (this.customizers != null && !this.customizers.isEmpty()) {
             for (CamelKIntegrationCustomizer customizer : this.customizers) {
-                camelkIntegration = customizer.customize(integrationDeployment, camelkIntegration);
+                camelkIntegration = customizer.customize(integrationDeployment, camelkIntegration, camelkSecret);
             }
         }
 
-        Secret camelkSecrets = createIntegrationSecret(integrationDeployment);
-
-        getOpenShiftService().createOrReplaceSecret(camelkSecrets);
+        getOpenShiftService().createOrReplaceSecret(camelkSecret);
         getOpenShiftService().createOrReplaceCR(integrationCRD,
             io.syndesis.server.controller.integration.camelk.crd.Integration.class,
             IntegrationList.class,
